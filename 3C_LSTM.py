@@ -105,7 +105,7 @@ class L1_struct(object):
             temp_index = np.random.randint(low=200, high=len(batch_data[batch]))
             if p > 0.51:
                 # print(batch_label[batch])
-                p_index = [idx for (idx, val) in enumerate(batch_label[batch]) if val == 0 and idx>200]
+                p_index = [idx for (idx, val) in enumerate(batch_label[batch]) if val == 1 and idx>200]
                 if p_index != []:
                     temp_index = p_index[np.random.randint(low=0, high=len(p_index))]+1
 
@@ -127,13 +127,13 @@ class L1_struct(object):
 data = sio.loadmat('SZ300112.mat')
 use_keys = ['Time', 'Price', 'Volume', 'BSFlag', 'AskPrice5', 'BidPrice5', 'AskVolume5', 'BidVolume5']
 data_dic = {}
-for keys in list(data.keys())[3:]:
+for keys in list(data.keys())[:]:
     if keys in use_keys:
         data_dic[keys] = list(data[keys])
         # print(len(list(data[keys])))
 
 data = pd.DataFrame(data_dic)
-w = 20
+w = 3
 bsflg2num = {'B': 0, 'S': 1, ' ': 2}
 data['BSFlag'] = data['BSFlag'].apply(lambda x: bsflg2num[x])
 data['Volume'] = data['Volume'].apply(lambda x: np.float(x[0]))
@@ -147,7 +147,7 @@ day_e = np.array(data[data['Time_diff'] == -1].index)
 data['label1'] = data.Price.rolling(window=20*w).mean().shift(-20*w)/data['Price'] - 1
 data['label2'] = data.Price.rolling(window=20*w).max().shift(-20*w)/data['Price'] - 1
 data['label3'] = data.Price.rolling(window=20*w).min().shift(-20*w)/data['Price'] - 1
-data['label'] = data.apply(lambda x: 0 if abs(x['label1']) < 0.004 and x['label2'] < 0.006 and x['label3'] > -0.006
+data['label'] = data.apply(lambda x: 0 if abs(x['label1']) < 0.002 and x['label2'] < 0.004 and x['label3'] > -0.004
                                       else 1, axis=1)
 
 for i in range(0, 5):
@@ -165,7 +165,7 @@ f2use = ['Price', 'Volume', 'BSFlag',
          ]
 all_data = []
 all_label = []
-for day in range(1,51):
+for day in range(1,201):
     print('day:', day)
     day_data = np.array(data[f2use][day_b[day]:day_e[day]])
     day_data[:, 0] = day_data[:, 0]/close_price[day-1]
@@ -217,7 +217,7 @@ cnn_output, states = model(X)
 h1 = tf.nn.relu(tf.matmul(cnn_output, w_1) + b_1)
 h2 = tf.nn.relu(tf.matmul(h1, w_2) + b_2)
 h3 = tf.nn.relu(tf.matmul(h2, w_3) + b_3)
-py_x = tf.nn.softmax(tf.matmul(h2, w_out) + b_out)
+py_x = tf.nn.softmax(tf.matmul(h3, w_out) + b_out)
 
 
 cost = -tf.reduce_sum(Y*tf.log(tf.clip_by_value(py_x,1e-5,1)))
@@ -234,7 +234,7 @@ with tf.Session(config=session_conf) as sess:
     tf.global_variables_initializer().run()
 
     for i in range(50):
-        for t in range(20):
+        for t in range(50):
             batch_data, batch_label, seq = tr_L1_data.batch(50)
             sess.run(train_op, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq})
             if t % 10 == 0:
