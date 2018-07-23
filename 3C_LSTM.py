@@ -201,7 +201,7 @@ f2use = ['Price', 'Volume', 'BSFlag1',
          ]
 all_data = []
 all_label = []
-for day in range(1, 3):
+for day in range(1, 201):
     print('day:', day)
     day_data = np.array(data[f2use][day_b[day]:day_e[day]])
     day_data[:, 0] = day_data[:, 0]/close_price[day-1]
