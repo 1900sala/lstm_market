@@ -45,7 +45,8 @@ def view_s(data,label):
 
 def norm_everyday(data):
     for i in range(len(data)):
-        norm_len = len(data[i][:,0])
+        # norm_len = len(data[i][:,0])
+        norm_len = 200
         mean_price = np.mean(data[i][:norm_len, 0])
         std_price = np.std(data[i][:norm_len, 0])
         mean_volume = np.mean(data[i][:norm_len, 1])
@@ -103,7 +104,7 @@ class L1_struct(object):
         for batch in range(len(batch_data)):
             p = np.random.random()
             temp_index = np.random.randint(low=200, high=len(batch_data[batch]))
-            if p > 0.4:
+            if p > 0.6:
                 # print(batch_label[batch])
                 p_index = [idx for (idx, val) in enumerate(batch_label[batch]) if val == 1 and idx>200]
                 if p_index != []:
@@ -136,7 +137,7 @@ data = pd.DataFrame(data_dic)
 w = 3
 bsflg2num = {'B': 0, 'S': 1, ' ': 2}
 data['BSFlag'] = data['BSFlag'].apply(lambda x: bsflg2num[x])
-data['Volume'] = data['Volume'].apply(lambda x: np.log(np.float(x[0])))
+data['Volume'] = data['Volume'].apply(lambda x: 0 if x==0 else np.log(np.float(x[0])))
 data['Price'] = data['Price'].apply(lambda x: np.float(x[0]))
 data['Time'] = data['Time'].apply(lambda x: x[0])
 data['Time_flag'] = data['Time'].apply(lambda x: 1 if x>94500000 and x<144500000 else 0)
@@ -153,8 +154,8 @@ data['label'] = data.apply(lambda x: 0 if abs(x['label1']) < 0.002 and x['label2
 for i in range(0, 5):
     data['AskPrice' + '_t' + str(i)] = data['AskPrice5'].apply(lambda x: np.float(x[i]))
     data['BidPrice' + '_t' + str(i)] = data['BidPrice5'].apply(lambda x: np.float(x[i]))
-    data['AskVolume' + '_t' + str(i)] = data['AskVolume5'].apply(lambda x: np.log(np.float(x[i])))
-    data['BidVolume' + '_t' + str(i)] = data['BidVolume5'].apply(lambda x: np.log(np.float(x[i])))
+    data['AskVolume' + '_t' + str(i)] = data['AskVolume5'].apply(lambda x: 0 if x[i]==0 else np.log(np.float(x[i])))
+    data['BidVolume' + '_t' + str(i)] = data['BidVolume5'].apply(lambda x: 0 if x[i]==0 else np.log(np.float(x[i])))
 del data['AskPrice5'], data['BidPrice5'], data['AskVolume5'], data['BidVolume5']
 
 f2use = ['Price', 'Volume', 'BSFlag',
