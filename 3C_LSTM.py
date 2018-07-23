@@ -8,15 +8,41 @@ import pandas as pd
 import random
 import copy
 
-input_vec_size = lstm_size = 25  # 输入向量的维度
+input_vec_size = 25
+lstm_size = 128  # 输入向量的维度
 input_time_mins = 30
 pre_time_mins = 10
 time_step_size = input_time_mins * 20  # 循环层长度
 batch_size = 20
 
 
-def view_s(data,label):
+def view_s(data, label, TYPE=0):
     # 可视化检查
+    if TYPE == 1:
+        fig = plt.figure()
+        ax1 = fig.add_subplot(321)
+        ax1.plot(data[:, 0])
+        buy_index = []
+        sell_index = []
+        for j in range(len(label)):
+            if label[j] == 1:
+                buy_index.append(j)
+            if label[j] == 0:
+                sell_index.append(j)
+        ax1.scatter(buy_index, data[buy_index, 0], c='r')
+        ax1.scatter(sell_index, data[sell_index, 0], c='y')
+        ax4 = fig.add_subplot(322)
+        ax4.plot(data[:, 1])
+        ax5 = fig.add_subplot(323)
+        ax5.plot(data[:, 3:8])
+        ax6 = fig.add_subplot(324)
+        ax6.plot(data[:, 8:13])
+        ax7 = fig.add_subplot(325)
+        ax7.plot(data[:, 13:18])
+        ax8 = fig.add_subplot(326)
+        ax8.plot(data[:, 18:23])
+        plt.show()
+        return
     for i in range(len(data)):
         fig = plt.figure()
         ax1 = fig.add_subplot(321)
@@ -30,7 +56,6 @@ def view_s(data,label):
                 sell_index.append(j)
         ax1.scatter(buy_index, data[i][buy_index, 0], c='r')
         ax1.scatter(sell_index, data[i][sell_index, 0], c='y')
-
         ax4 = fig.add_subplot(322)
         ax4.plot(data[i][:, 1])
         ax5 = fig.add_subplot(323)
@@ -90,9 +115,10 @@ class L1_struct(object):
         self.data = data
         self.label = label
 
-    def batch(self, size, check = False):
+    def batch(self, size):
         data_len = len(self.data)
         index = np.array(range(data_len))
+        # print(data_len, index)
         random.shuffle(index)
         data_batch_loc = index[: size]
         batch_data = self.data[data_batch_loc]
@@ -100,7 +126,6 @@ class L1_struct(object):
         batch_fix_data = []
         batch_fix_label = []
         sequence_length = []
-
         for batch in range(len(batch_data)):
             p = np.random.random()
             temp_index = np.random.randint(low=200, high=len(batch_data[batch]))
@@ -111,9 +136,12 @@ class L1_struct(object):
                     temp_index = p_index[np.random.randint(low=0, high=len(p_index))]
 
             copy_data = copy.deepcopy(batch_data[batch][: temp_index+1, :])
+            copy_label = copy.deepcopy(batch_label[batch][: temp_index + 1])
+            # print(batch_label[batch][temp_index])
+            # view_s(copy_data, copy_label, TYPE=1)
             sequence_length.append(len(copy_data))
             batch_fix_data.append(copy_data)
-            if batch_label[batch][temp_index] == 0:
+            if copy_label[-1] == 0:
                 batch_fix_label.append([0, 1])
             else:
                 batch_fix_label.append([1, 0])
@@ -151,7 +179,7 @@ day_e = np.array(data[data['Time_diff'] == -1].index)
 data['label1'] = data.Price.rolling(window=20*w).mean().shift(-20*w)/data['Price'] - 1
 data['label2'] = data.Price.rolling(window=20*w).max().shift(-20*w)/data['Price'] - 1
 data['label3'] = data.Price.rolling(window=20*w).min().shift(-20*w)/data['Price'] - 1
-data['label'] = data.apply(lambda x: 0 if abs(x['label1']) < 0.002 and x['label2'] < 0.004 and x['label3'] > -0.004
+data['label'] = data.apply(lambda x: 0 if abs(x['label1']) < 0.003 and x['label2'] < 0.006 and x['label3'] > -0.006
                                       else 1, axis=1)
 
 for i in range(0, 5):
@@ -170,7 +198,7 @@ f2use = ['Price', 'Volume', 'BSFlag1',
          ]
 all_data = []
 all_label = []
-for day in range(1,201):
+for day in range(1,3):
     print('day:', day)
     day_data = np.array(data[f2use][day_b[day]:day_e[day]])
     day_data[:, 0] = day_data[:, 0]/close_price[day-1]
@@ -183,15 +211,15 @@ for day in range(1,201):
 all_data = np.array(all_data)
 all_label = np.array(all_label)
 trX, teX, trY, teY = split_tr_te(all_data, all_label)
-# view_s(trX,trY)
+view_s(trX,trY)
 trX = norm_everyday(trX)
 teX = norm_everyday(teX)
-# view_s(pp, trY)
+view_s(trX, trY)
 tr_L1_data = L1_struct(trX, trY)
 te_L1_data = L1_struct(teX, teY)
 # tr_L1_data.batch(50)
 
-X = tf.placeholder("float", [None, None, lstm_size])
+X = tf.placeholder("float", [None, None, input_vec_size])
 Y = tf.placeholder("float", [None, 2])
 sequence_length = tf.placeholder(tf.int32, [None])
 
@@ -209,11 +237,11 @@ def model(X):
 def init_weights(shape):
     return tf.Variable(tf.random_normal(shape, stddev=0.01))
 # get lstm_size and output 10 labels
-w_1 = init_weights([lstm_size, 32])
-b_1 = init_weights([32])
-w_2 = init_weights([32, 32])
-b_2 = init_weights([32])
-w_3 = init_weights([32, 32])
+w_1 = init_weights([lstm_size, 64])
+b_1 = init_weights([64])
+w_2 = init_weights([64, 64])
+b_2 = init_weights([64])
+w_3 = init_weights([64, 32])
 b_3 = init_weights([32])
 w_out = init_weights([32, 2])
 b_out = init_weights([2])
@@ -240,12 +268,12 @@ with tf.Session(config=session_conf) as sess:
 
     for i in range(50):
         for t in range(50):
-            batch_data, batch_label, seq = tr_L1_data.batch(50)
+            batch_data, batch_label, seq = tr_L1_data.batch(1)
             sess.run(train_op, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq})
             if t % 10 == 0:
                 print('train_acc', sess.run(accuracy, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
 
-        batch_data, batch_label, seq= te_L1_data.batch(20)
+        batch_data, batch_label, seq = tr_L1_data.batch(1)
         # print('last_states', sess.run(states, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
         print(i, sess.run(accuracy, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
         p = sess.run(py_x, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq})
