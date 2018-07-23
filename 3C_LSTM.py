@@ -8,7 +8,7 @@ import pandas as pd
 import random
 import copy
 
-input_vec_size = lstm_size = 23  # 输入向量的维度
+input_vec_size = lstm_size = 25  # 输入向量的维度
 input_time_mins = 30
 pre_time_mins = 10
 time_step_size = input_time_mins * 20  # 循环层长度
@@ -137,6 +137,9 @@ data = pd.DataFrame(data_dic)
 w = 3
 bsflg2num = {'B': 0, 'S': 1, ' ': 2}
 data['BSFlag'] = data['BSFlag'].apply(lambda x: bsflg2num[x])
+data['BSFlag1'] = data['BSFlag'].apply(lambda x: 1 if x ==0 else 0)
+data['BSFlag2'] = data['BSFlag'].apply(lambda x: 1 if x ==1 else 0)
+data['BSFlag3'] = data['BSFlag'].apply(lambda x: 1 if x ==2 else 0)
 data['Volume'] = data['Volume'].apply(lambda x: 0 if x==0 else np.log(np.float(x[0])))
 data['Price'] = data['Price'].apply(lambda x: np.float(x[0]))
 data['Time'] = data['Time'].apply(lambda x: x[0])
@@ -158,11 +161,12 @@ for i in range(0, 5):
     data['BidVolume' + '_t' + str(i)] = data['BidVolume5'].apply(lambda x: 0 if x[i]==0 else np.log(np.float(x[i])))
 del data['AskPrice5'], data['BidPrice5'], data['AskVolume5'], data['BidVolume5']
 
-f2use = ['Price', 'Volume', 'BSFlag',
+f2use = ['Price', 'Volume', 'BSFlag1',
          'AskPrice_t0', 'AskPrice_t1', 'AskPrice_t2', 'AskPrice_t3', 'AskPrice_t4',
          'BidPrice_t0', 'BidPrice_t1', 'BidPrice_t2', 'BidPrice_t3', 'BidPrice_t4',
          'AskVolume_t0', 'AskVolume_t1', 'AskVolume_t2', 'AskVolume_t3', 'AskVolume_t4',
          'BidVolume_t0', 'BidVolume_t1', 'BidVolume_t2', 'BidVolume_t3', 'BidVolume_t4',
+         'BSFlag2', 'BSFlag3'
          ]
 all_data = []
 all_label = []
@@ -242,7 +246,7 @@ with tf.Session(config=session_conf) as sess:
                 print('train_acc', sess.run(accuracy, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
 
         batch_data, batch_label, seq= te_L1_data.batch(20)
-        print('last_states', sess.run(states, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
+        # print('last_states', sess.run(states, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
         print(i, sess.run(accuracy, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
         p = sess.run(py_x, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq})
         # print(batch_data)
