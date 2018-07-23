@@ -162,7 +162,7 @@ for keys in list(data.keys())[:]:
         # print(len(list(data[keys])))
 
 data = pd.DataFrame(data_dic)
-w = 3
+w = 2
 bsflg2num = {'B': 0, 'S': 1, ' ': 2}
 data['BSFlag'] = data['BSFlag'].apply(lambda x: bsflg2num[x])
 data['BSFlag1'] = data['BSFlag'].apply(lambda x: 1 if x == 0 else 0)
@@ -176,19 +176,20 @@ data['Time_diff'] = data['Time_flag'].diff()
 close_price = list(data['Price'][data['Time_diff'] == -1])
 day_b = np.array(data[data['Time_diff'] == 1].index)
 day_e = np.array(data[data['Time_diff'] == -1].index)
+data['mp'] = data.Price
 data['Price'] = data.Price.rolling(window=20).mean()
-data['label1'] = data.Price.shift(-20*w)/data['Price'] - 1
-# data['label2'] = data.Price.max().shift(-20*w)/data['Price'] - 1
-# data['label3'] = data.Price.min().shift(-20*w)/data['Price'] - 1
-# data['label'] = data.apply(lambda x: 0 if abs(x['label1']) < 0.003 and x['label2'] < 0.006 and x['label3'] > -0.006
-#                                       else 1, axis=1)
-data['label'] = data.apply(lambda x: 0 if abs(x['label1']) < 0.003 else 1, axis=1)
+data['label1'] = data.mp.rolling(window=20).min().shift(-20*w)/data['Price'] - 1
+data['label2'] = data.mp.rolling(window=20).max().shift(-20*w)/data['Price'] - 1
+data['label3'] = data.mp.rolling(window=20).min().shift(-20*w)/data['Price'] - 1
+data['label'] = data.apply(lambda x: 0 if abs(x['label1']) < 0.002 and x['label2'] < 0.003 and x['label3'] > -0.003
+                                      else 1, axis=1)
+# data['label'] = data.apply(lambda x: 0 if abs(x['label1']) < 0.002 else 1, axis=1)
 
 for i in range(0, 5):
     data['AskPrice' + '_t' + str(i)] = data['AskPrice5'].apply(lambda x: np.float(x[i]))
     data['BidPrice' + '_t' + str(i)] = data['BidPrice5'].apply(lambda x: np.float(x[i]))
-    data['AskVolume' + '_t' + str(i)] = data['AskVolume5'].apply(lambda x: 0 if x[i]==0 else np.log(np.float(x[i])))
-    data['BidVolume' + '_t' + str(i)] = data['BidVolume5'].apply(lambda x: 0 if x[i]==0 else np.log(np.float(x[i])))
+    data['AskVolume' + '_t' + str(i)] = data['AskVolume5'].apply(lambda x: 0 if x[i] == 0 else np.log(np.float(x[i])))
+    data['BidVolume' + '_t' + str(i)] = data['BidVolume5'].apply(lambda x: 0 if x[i] == 0 else np.log(np.float(x[i])))
 del data['AskPrice5'], data['BidPrice5'], data['AskVolume5'], data['BidVolume5']
 
 f2use = ['Price', 'Volume', 'BSFlag1',
@@ -200,7 +201,7 @@ f2use = ['Price', 'Volume', 'BSFlag1',
          ]
 all_data = []
 all_label = []
-for day in range(1,3):
+for day in range(1, 3):
     print('day:', day)
     day_data = np.array(data[f2use][day_b[day]:day_e[day]])
     day_data[:, 0] = day_data[:, 0]/close_price[day-1]
