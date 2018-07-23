@@ -103,16 +103,16 @@ class L1_struct(object):
         for batch in range(len(batch_data)):
             p = np.random.random()
             temp_index = np.random.randint(low=200, high=len(batch_data[batch]))
-            if p > 0.51:
+            if p > 0.4:
                 # print(batch_label[batch])
                 p_index = [idx for (idx, val) in enumerate(batch_label[batch]) if val == 1 and idx>200]
                 if p_index != []:
-                    temp_index = p_index[np.random.randint(low=0, high=len(p_index))]+1
+                    temp_index = p_index[np.random.randint(low=0, high=len(p_index))]
 
-            copy_data = copy.deepcopy(batch_data[batch][: temp_index, :])
+            copy_data = copy.deepcopy(batch_data[batch][: temp_index+1, :])
             sequence_length.append(len(copy_data))
             batch_fix_data.append(copy_data)
-            if batch_label[batch][temp_index-1] == 0:
+            if batch_label[batch][temp_index] == 0:
                 batch_fix_label.append([0, 1])
             else:
                 batch_fix_label.append([1, 0])
