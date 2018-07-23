@@ -130,7 +130,6 @@ class L1_struct(object):
             p = np.random.random()
             temp_index = np.random.randint(low=200, high=len(batch_data[batch]))
             if p > 0.6:
-                # print(batch_label[batch])
                 p_index = [idx for (idx, val) in enumerate(batch_label[batch]) if val == 1 and idx>200]
                 if p_index != []:
                     temp_index = p_index[np.random.randint(low=0, high=len(p_index))]
@@ -214,13 +213,12 @@ for day in range(1, 201):
 all_data = np.array(all_data)
 all_label = np.array(all_label)
 trX, teX, trY, teY = split_tr_te(all_data, all_label)
-view_s(trX,trY)
 trX = norm_everyday(trX)
 teX = norm_everyday(teX)
-view_s(trX, trY)
+# view_s(trX, trY)
 tr_L1_data = L1_struct(trX, trY)
 te_L1_data = L1_struct(teX, teY)
-# tr_L1_data.batch(50)
+
 
 X = tf.placeholder("float", [None, None, input_vec_size])
 Y = tf.placeholder("float", [None, 2])
@@ -271,12 +269,12 @@ with tf.Session(config=session_conf) as sess:
 
     for i in range(50):
         for t in range(50):
-            batch_data, batch_label, seq = tr_L1_data.batch(1)
+            batch_data, batch_label, seq = tr_L1_data.batch(20)
             sess.run(train_op, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq})
             if t % 10 == 0:
                 print('train_acc', sess.run(accuracy, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
 
-        batch_data, batch_label, seq = tr_L1_data.batch(1)
+        batch_data, batch_label, seq = tr_L1_data.batch(10)
         # print('last_states', sess.run(states, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
         print(i, sess.run(accuracy, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
         p = sess.run(py_x, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq})
