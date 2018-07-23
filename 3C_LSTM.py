@@ -136,7 +136,7 @@ data = pd.DataFrame(data_dic)
 w = 3
 bsflg2num = {'B': 0, 'S': 1, ' ': 2}
 data['BSFlag'] = data['BSFlag'].apply(lambda x: bsflg2num[x])
-data['Volume'] = data['Volume'].apply(lambda x: np.float(x[0]))
+data['Volume'] = data['Volume'].apply(lambda x: np.log(np.float(x[0])))
 data['Price'] = data['Price'].apply(lambda x: np.float(x[0]))
 data['Time'] = data['Time'].apply(lambda x: x[0])
 data['Time_flag'] = data['Time'].apply(lambda x: 1 if x>94500000 and x<144500000 else 0)
@@ -153,8 +153,8 @@ data['label'] = data.apply(lambda x: 0 if abs(x['label1']) < 0.002 and x['label2
 for i in range(0, 5):
     data['AskPrice' + '_t' + str(i)] = data['AskPrice5'].apply(lambda x: np.float(x[i]))
     data['BidPrice' + '_t' + str(i)] = data['BidPrice5'].apply(lambda x: np.float(x[i]))
-    data['AskVolume' + '_t' + str(i)] = data['AskVolume5'].apply(lambda x: np.float(x[i]))
-    data['BidVolume' + '_t' + str(i)] = data['BidVolume5'].apply(lambda x: np.float(x[i]))
+    data['AskVolume' + '_t' + str(i)] = data['AskVolume5'].apply(lambda x: np.log(np.float(x[i])))
+    data['BidVolume' + '_t' + str(i)] = data['BidVolume5'].apply(lambda x: np.log(np.float(x[i])))
 del data['AskPrice5'], data['BidPrice5'], data['AskVolume5'], data['BidVolume5']
 
 f2use = ['Price', 'Volume', 'BSFlag',
