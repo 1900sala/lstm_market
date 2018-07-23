@@ -165,10 +165,10 @@ data = pd.DataFrame(data_dic)
 w = 3
 bsflg2num = {'B': 0, 'S': 1, ' ': 2}
 data['BSFlag'] = data['BSFlag'].apply(lambda x: bsflg2num[x])
-data['BSFlag1'] = data['BSFlag'].apply(lambda x: 1 if x ==0 else 0)
-data['BSFlag2'] = data['BSFlag'].apply(lambda x: 1 if x ==1 else 0)
-data['BSFlag3'] = data['BSFlag'].apply(lambda x: 1 if x ==2 else 0)
-data['Volume'] = data['Volume'].apply(lambda x: 0 if x==0 else np.log(np.float(x[0])))
+data['BSFlag1'] = data['BSFlag'].apply(lambda x: 1 if x == 0 else 0)
+data['BSFlag2'] = data['BSFlag'].apply(lambda x: 1 if x == 1 else 0)
+data['BSFlag3'] = data['BSFlag'].apply(lambda x: 1 if x == 2 else 0)
+data['Volume'] = data['Volume'].apply(lambda x: 0 if x == 0 else np.log(np.float(x[0])))
 data['Price'] = data['Price'].apply(lambda x: np.float(x[0]))
 data['Time'] = data['Time'].apply(lambda x: x[0])
 data['Time_flag'] = data['Time'].apply(lambda x: 1 if x>94500000 and x<144500000 else 0)
@@ -176,11 +176,13 @@ data['Time_diff'] = data['Time_flag'].diff()
 close_price = list(data['Price'][data['Time_diff'] == -1])
 day_b = np.array(data[data['Time_diff'] == 1].index)
 day_e = np.array(data[data['Time_diff'] == -1].index)
-data['label1'] = data.Price.rolling(window=20*w).mean().shift(-20*w)/data['Price'] - 1
-data['label2'] = data.Price.rolling(window=20*w).max().shift(-20*w)/data['Price'] - 1
-data['label3'] = data.Price.rolling(window=20*w).min().shift(-20*w)/data['Price'] - 1
-data['label'] = data.apply(lambda x: 0 if abs(x['label1']) < 0.003 and x['label2'] < 0.006 and x['label3'] > -0.006
-                                      else 1, axis=1)
+data['Price'] = data.Price.rolling(window=20).mean()
+data['label1'] = data.Price.shift(-20*w)/data['Price'] - 1
+# data['label2'] = data.Price.max().shift(-20*w)/data['Price'] - 1
+# data['label3'] = data.Price.min().shift(-20*w)/data['Price'] - 1
+# data['label'] = data.apply(lambda x: 0 if abs(x['label1']) < 0.003 and x['label2'] < 0.006 and x['label3'] > -0.006
+#                                       else 1, axis=1)
+data['label'] = data.apply(lambda x: 0 if abs(x['label1']) < 0.003 else 1, axis=1)
 
 for i in range(0, 5):
     data['AskPrice' + '_t' + str(i)] = data['AskPrice5'].apply(lambda x: np.float(x[i]))
