@@ -12,77 +12,52 @@ input_vec_size = 26
 hiede_size = 256  # 输入向量的维度
 
 
-def view_s(data, label, TYPE=0):
-    # 可视化检查
-    if TYPE == 1:
-        fig = plt.figure()
-        ax1 = fig.add_subplot(331)
-        ax1.plot(data[:, 0])
-        buy_index = []
-        sell_index = []
-        for j in range(len(label)):
-            if label[j] == 1:
-                buy_index.append(j)
-            if label[j] == 0:
-                sell_index.append(j)
-        ax1.scatter(buy_index, data[buy_index, 0], c='r')
-        ax1.scatter(sell_index, data[sell_index, 0], c='y')
-        ax2 = fig.add_subplot(332)
-        ax2.plot(data[:, 1])
-        ax3 = fig.add_subplot(333)
-        ax3.plot(data[:, 3:8])
-        ax4 = fig.add_subplot(334)
-        ax4.plot(data[:, 8:13])
-        ax5 = fig.add_subplot(335)
-        ax5.plot(data[:, 13:18])
-        ax6 = fig.add_subplot(336)
-        ax6.plot(data[:, 18:23])
-        ax7 = fig.add_subplot(337)
-        ax7.plot(data[:, 25])
-        plt.show()
-        return
-    for i in range(len(data)):
-        fig = plt.figure()
-        ax1 = fig.add_subplot(331)
-        ax1.plot(data[i][:, 0])
-        buy_index = []
-        sell_index = []
-        for j in range(len(label[i])):
-            if label[i][j] == 1:
-                buy_index.append(j)
-            if label[i][j] == 0:
-                sell_index.append(j)
-        ax1.scatter(buy_index, data[i][buy_index, 0], c='r')
-        ax1.scatter(sell_index, data[i][sell_index, 0], c='y')
-        ax2 = fig.add_subplot(332)
-        ax2.plot(data[i][:, 1])
-        ax3 = fig.add_subplot(333)
-        ax3.plot(data[i][:, 3:8])
-        ax4 = fig.add_subplot(334)
-        ax4.plot(data[i][:, 8:13])
-        ax5 = fig.add_subplot(335)
-        ax5.plot(data[i][:, 13:18])
-        ax6 = fig.add_subplot(336)
-        ax6.plot(data[i][:, 18:23])
-        ax7 = fig.add_subplot(337)
-        ax7.plot(data[i][:, 25])
-        plt.show()
+def view_s(data, label):
+    fig = plt.figure()
+    ax1 = fig.add_subplot(331)
+    ax1.plot(data[:, 0])
+    buy_index = []
+    sell_index = []
+    for j in range(len(label)):
+        if label[j] == 1:
+            buy_index.append(j)
+        if label[j] == 0:
+            sell_index.append(j)
+    ax1.scatter(buy_index, data[buy_index, 0], c='r')
+    ax1.scatter(sell_index, data[sell_index, 0], c='y')
+    ax2 = fig.add_subplot(332)
+    ax2.plot(data[:, 1])
+    ax3 = fig.add_subplot(333)
+    ax3.plot(data[:, 3:8])
+    ax4 = fig.add_subplot(334)
+    ax4.plot(data[:, 8:13])
+    ax5 = fig.add_subplot(335)
+    ax5.plot(data[:, 13:18])
+    ax6 = fig.add_subplot(336)
+    ax6.plot(data[:, 18:23])
+    ax7 = fig.add_subplot(337)
+    ax7.plot(data[:, 25])
+    plt.show()
+    return
 
-def norm_everyday(data):
-    for i in range(len(data)):
-        # norm_len = len(data[i][:,0])
-        norm_len = 300
-        mean_price = np.mean(data[i][:norm_len, 0])
-        std_price = np.std(data[i][:norm_len, 0])
-        mean_volume = np.mean(data[i][:norm_len, 1])
-        std_volume = np.std(data[i][:norm_len, 1])
-        mean_ba = np.mean(data[i][:norm_len, 13:])
-        std_ba = np.std(data[i][:norm_len, 13:])
-        data[i][:, 0] = (data[i][:, 0] - mean_price) / std_price
-        data[i][:, 1] = (data[i][:, 1] - mean_volume) / std_volume
-        data[i][:, 3:13] = (data[i][:, 3:13] - mean_price) / std_price
-        data[i][:, 13:23] = (data[i][:, 13:23] - mean_ba) / std_ba
-    return data
+
+
+def norm_data(data):
+    norm_len = len(data[:,0])
+    mean_price = np.mean(data[:norm_len, 0])
+    std_price = np.std(data[:norm_len, 0])
+    mean_volume = np.mean(data[:norm_len, 1])
+    std_volume = np.std(data[:norm_len, 1])
+    mean_ba = np.mean(data[:norm_len, 13:])
+    std_ba = np.std(data[:norm_len, 13:])
+    mean_price_std = np.mean(data[:norm_len, 25])
+    std_price_std =np.std(data[:norm_len, 25])
+    data[:, 0] = (data[:, 0] - mean_price) / std_price
+    data[:, 1] = (data[:, 1] - mean_volume) / std_volume
+    data[:, 3:13] = (data[:, 3:13] - mean_price) / std_price
+    data[:, 13:23] = (data[:, 13:23] - mean_ba) / std_ba
+    data[:, 25] = (data[:, 25] - mean_price_std) / std_price_std
+    return data, [mean_price, mean_ba, mean_volume, mean_price]
 
 
 def split_tr_te(data, label, size=0.8):
@@ -136,8 +111,8 @@ class L1_struct(object):
 
             copy_data = copy.deepcopy(batch_data[batch][: temp_index+1, :])
             copy_label = copy.deepcopy(batch_label[batch][: temp_index + 1])
-            # print(batch_label[batch][temp_index])
-            # view_s(copy_data, copy_label, TYPE=1)
+            copy_data, temp = norm_data(copy_data)
+            view_s(copy_data, copy_label)
             sequence_length.append(len(copy_data))
             batch_fix_data.append(copy_data)
             if copy_label[-1] == 0:
@@ -214,10 +189,6 @@ for day in range(1, 201):
 all_data = np.array(all_data)
 all_label = np.array(all_label)
 trX, teX, trY, teY = split_tr_te(all_data, all_label)
-# view_s(trX, trY)
-trX = norm_everyday(trX)
-teX = norm_everyday(teX)
-# view_s(trX, trY)
 tr_L1_data = L1_struct(trX, trY)
 te_L1_data = L1_struct(teX, teY)
 
