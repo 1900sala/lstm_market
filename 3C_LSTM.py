@@ -8,7 +8,7 @@ import pandas as pd
 import random
 import copy
 
-input_vec_size = 25
+input_vec_size = 26
 lstm_size = 128  # 输入向量的维度
 input_time_mins = 30
 pre_time_mins = 10
@@ -20,7 +20,7 @@ def view_s(data, label, TYPE=0):
     # 可视化检查
     if TYPE == 1:
         fig = plt.figure()
-        ax1 = fig.add_subplot(321)
+        ax1 = fig.add_subplot(331)
         ax1.plot(data[:, 0])
         buy_index = []
         sell_index = []
@@ -31,21 +31,23 @@ def view_s(data, label, TYPE=0):
                 sell_index.append(j)
         ax1.scatter(buy_index, data[buy_index, 0], c='r')
         ax1.scatter(sell_index, data[sell_index, 0], c='y')
-        ax4 = fig.add_subplot(322)
-        ax4.plot(data[:, 1])
-        ax5 = fig.add_subplot(323)
-        ax5.plot(data[:, 3:8])
-        ax6 = fig.add_subplot(324)
-        ax6.plot(data[:, 8:13])
-        ax7 = fig.add_subplot(325)
-        ax7.plot(data[:, 13:18])
-        ax8 = fig.add_subplot(326)
-        ax8.plot(data[:, 18:23])
+        ax2 = fig.add_subplot(332)
+        ax2.plot(data[:, 1])
+        ax3 = fig.add_subplot(333)
+        ax3.plot(data[:, 3:8])
+        ax4 = fig.add_subplot(334)
+        ax4.plot(data[:, 8:13])
+        ax5 = fig.add_subplot(335)
+        ax5.plot(data[:, 13:18])
+        ax6 = fig.add_subplot(336)
+        ax6.plot(data[:, 18:23])
+        ax7 = fig.add_subplot(337)
+        ax7.plot(data[:, 25])
         plt.show()
         return
     for i in range(len(data)):
         fig = plt.figure()
-        ax1 = fig.add_subplot(321)
+        ax1 = fig.add_subplot(331)
         ax1.plot(data[i][:, 0])
         buy_index = []
         sell_index = []
@@ -56,16 +58,18 @@ def view_s(data, label, TYPE=0):
                 sell_index.append(j)
         ax1.scatter(buy_index, data[i][buy_index, 0], c='r')
         ax1.scatter(sell_index, data[i][sell_index, 0], c='y')
-        ax4 = fig.add_subplot(322)
-        ax4.plot(data[i][:, 1])
-        ax5 = fig.add_subplot(323)
-        ax5.plot(data[i][:, 3:8])
-        ax6 = fig.add_subplot(324)
-        ax6.plot(data[i][:, 8:13])
-        ax7 = fig.add_subplot(325)
-        ax7.plot(data[i][:, 13:18])
-        ax8 = fig.add_subplot(326)
-        ax8.plot(data[i][:, 18:23])
+        ax2 = fig.add_subplot(332)
+        ax2.plot(data[i][:, 1])
+        ax3 = fig.add_subplot(333)
+        ax3.plot(data[i][:, 3:8])
+        ax4 = fig.add_subplot(334)
+        ax4.plot(data[i][:, 8:13])
+        ax5 = fig.add_subplot(335)
+        ax5.plot(data[i][:, 13:18])
+        ax6 = fig.add_subplot(336)
+        ax6.plot(data[i][:, 18:23])
+        ax7 = fig.add_subplot(337)
+        ax7.plot(data[i][:, 25])
         plt.show()
 
 def norm_everyday(data):
@@ -129,7 +133,7 @@ class L1_struct(object):
         for batch in range(len(batch_data)):
             p = np.random.random()
             temp_index = np.random.randint(low=200, high=len(batch_data[batch]))
-            if p > 0.6:
+            if p > 0.5:
                 p_index = [idx for (idx, val) in enumerate(batch_label[batch]) if val == 1 and idx>200]
                 if p_index != []:
                     temp_index = p_index[np.random.randint(low=0, high=len(p_index))]
@@ -177,7 +181,12 @@ day_b = np.array(data[data['Time_diff'] == 1].index)
 day_e = np.array(data[data['Time_diff'] == -1].index)
 data['mp'] = data.Price
 data['Price'] = data.Price.rolling(window=20).mean()
-data['label1'] = data.mp.rolling(window=20).min().shift(-20*w)/data['Price'] - 1
+data['std_Price'] = data['Price'].rolling(window=2).std()
+# ppp = pd.DataFrame({'a':list(data['Price'])[400:]})
+# print(ppp.a)
+# print(ppp.a.rolling(10).std())
+# print(data[['Price', 'std_Price']])
+data['label1'] = data.mp.rolling(window=20).mean().shift(-20*w)/data['Price'] - 1
 data['label2'] = data.mp.rolling(window=20).max().shift(-20*w)/data['Price'] - 1
 data['label3'] = data.mp.rolling(window=20).min().shift(-20*w)/data['Price'] - 1
 data['label'] = data.apply(lambda x: 0 if abs(x['label1']) < 0.002 and x['label2'] < 0.003 and x['label3'] > -0.003
@@ -196,7 +205,7 @@ f2use = ['Price', 'Volume', 'BSFlag1',
          'BidPrice_t0', 'BidPrice_t1', 'BidPrice_t2', 'BidPrice_t3', 'BidPrice_t4',
          'AskVolume_t0', 'AskVolume_t1', 'AskVolume_t2', 'AskVolume_t3', 'AskVolume_t4',
          'BidVolume_t0', 'BidVolume_t1', 'BidVolume_t2', 'BidVolume_t3', 'BidVolume_t4',
-         'BSFlag2', 'BSFlag3'
+         'BSFlag2', 'BSFlag3', 'std_Price'
          ]
 all_data = []
 all_label = []
@@ -213,9 +222,10 @@ for day in range(1, 201):
 all_data = np.array(all_data)
 all_label = np.array(all_label)
 trX, teX, trY, teY = split_tr_te(all_data, all_label)
+view_s(trX, trY)
 trX = norm_everyday(trX)
 teX = norm_everyday(teX)
-# view_s(trX, trY)
+view_s(trX, trY)
 tr_L1_data = L1_struct(trX, trY)
 te_L1_data = L1_struct(teX, teY)
 
