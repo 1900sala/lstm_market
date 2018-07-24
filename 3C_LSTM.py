@@ -71,7 +71,7 @@ def view_s(data, label, TYPE=0):
 def norm_everyday(data):
     for i in range(len(data)):
         # norm_len = len(data[i][:,0])
-        norm_len = 200
+        norm_len = 300
         mean_price = np.mean(data[i][:norm_len, 0])
         std_price = np.std(data[i][:norm_len, 0])
         mean_volume = np.mean(data[i][:norm_len, 1])
