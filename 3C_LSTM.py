@@ -232,14 +232,14 @@ sequence_length = tf.placeholder(tf.int32, [None])
 
 def model(X):
     lstm = rnn.BasicLSTMCell(lstm_size, forget_bias=1.0, state_is_tuple=True)
-    # mlstm_cell = rnn.MultiRNNCell([lstm]*4)
+    # mlstm_cell = rnn.MultiRNNCell([lstm]*4, state_is_tuple=True)
     outputs, last_states = tf.nn.dynamic_rnn(
         cell=lstm,
         dtype=tf.float32,
         sequence_length=sequence_length,
         inputs=X)
     # return last_states.h, last_states.c  # State size to initialize the stat
-    return last_states.c, last_states.c  # State size to initialize the stat
+    return last_states.h, last_states.c  # State size to initialize the stat
 
 def init_weights(shape):
     return tf.Variable(tf.random_normal(shape, stddev=0.01))
