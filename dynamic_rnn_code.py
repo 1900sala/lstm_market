@@ -28,7 +28,7 @@ X = apply_to_zeros(X)
 print(X)
 
 # cell = tf.contrib.rnn.BasicLSTMCell(num_units=64, state_is_tuple=True)
-cell = tf.contrib.rnn.BasicLSTMCell(num_units=2,state_is_tuple=True)
+cell = tf.contrib.rnn.BasicLSTMCell(num_units=5,state_is_tuple=True)
 
 outputs, last_states = tf.nn.dynamic_rnn(
     cell=cell,
@@ -42,9 +42,9 @@ with tf.Session() as sess:
     o=sess.run(outputs)
     s=sess.run(last_states)
     print('output\n',o)
-    # print('last_o\n',o[:,-1,:])# 从output中取最后一次输出
+    print('last_o\n',o[:,-1,:])# 从output中取最后一次输出
     #
     # print('--------------------')
     # print('s\n',s)
-    # print('s.c\n',s.c)    # 这是门控单元的权重，这里不需要
+    print('s.c\n',s.c)    # 这是门控单元的权重，这里不需要
     print('s.h\n',s.h)    #s.h就是最后一次输出的状态

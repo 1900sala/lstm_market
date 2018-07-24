@@ -9,11 +9,7 @@ import random
 import copy
 
 input_vec_size = 26
-lstm_size = 128  # 输入向量的维度
-input_time_mins = 30
-pre_time_mins = 10
-time_step_size = input_time_mins * 20  # 循环层长度
-batch_size = 20
+hiede_size = 256  # 输入向量的维度
 
 
 def view_s(data, label, TYPE=0):
@@ -230,21 +226,26 @@ X = tf.placeholder("float", [None, None, input_vec_size])
 Y = tf.placeholder("float", [None, 2])
 sequence_length = tf.placeholder(tf.int32, [None])
 
+
 def model(X):
-    lstm = rnn.BasicLSTMCell(lstm_size, forget_bias=1.0, state_is_tuple=True)
-    # mlstm_cell = rnn.MultiRNNCell([lstm]*4, state_is_tuple=True)
+    lstm = rnn.LSTMCell(hiede_size, forget_bias=1.0, state_is_tuple=True)
+    # mlstm_cell = rnn.MultiRNNCell([lstm  for _ in range(3)], state_is_tuple=True)
+    # print(X.shape)
+    init_state = lstm.zero_state(20, dtype=tf.float32)
     outputs, last_states = tf.nn.dynamic_rnn(
         cell=lstm,
         dtype=tf.float32,
         sequence_length=sequence_length,
+        initial_state=init_state,
         inputs=X)
     # return last_states.h, last_states.c  # State size to initialize the stat
     return last_states.h, last_states.c  # State size to initialize the stat
 
+
 def init_weights(shape):
     return tf.Variable(tf.random_normal(shape, stddev=0.01))
 # get lstm_size and output 10 labels
-w_1 = init_weights([lstm_size, 64])
+w_1 = init_weights([hiede_size, 64])
 b_1 = init_weights([64])
 w_2 = init_weights([64, 64])
 b_2 = init_weights([64])
@@ -260,7 +261,7 @@ h3 = tf.nn.relu(tf.matmul(h2, w_3) + b_3)
 py_x = tf.nn.softmax(tf.matmul(h3, w_out) + b_out)
 
 
-cost = -tf.reduce_sum(Y*tf.log(tf.clip_by_value(py_x,1e-5,1)))
+cost = -tf.reduce_sum(Y*tf.log(tf.clip_by_value(py_x, 1e-5, 1)))
 train_op = tf.train.RMSPropOptimizer(0.001, 0.9).minimize(cost)
 correct_prediction = tf.equal(tf.argmax(py_x, 1), tf.argmax(Y, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
@@ -280,7 +281,7 @@ with tf.Session(config=session_conf) as sess:
             if t % 10 == 0:
                 print('train_acc', sess.run(accuracy, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
 
-        batch_data, batch_label, seq = tr_L1_data.batch(10)
+        batch_data, batch_label, seq = tr_L1_data.batch(20)
         # print('last_states', sess.run(states, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
         print(i, sess.run(accuracy, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
         p = sess.run(py_x, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq})
