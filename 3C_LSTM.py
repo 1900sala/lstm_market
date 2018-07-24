@@ -181,11 +181,7 @@ day_b = np.array(data[data['Time_diff'] == 1].index)
 day_e = np.array(data[data['Time_diff'] == -1].index)
 data['mp'] = data.Price
 data['Price'] = data.Price.rolling(window=20).mean()
-data['std_Price'] = data['Price'].rolling(window=2).std()
-# ppp = pd.DataFrame({'a':list(data['Price'])[400:]})
-# print(ppp.a)
-# print(ppp.a.rolling(10).std())
-# print(data[['Price', 'std_Price']])
+data['std_Price'] = data['Price'].rolling(window=20).std()
 data['label1'] = data.mp.rolling(window=20).mean().shift(-20*w)/data['Price'] - 1
 data['label2'] = data.mp.rolling(window=20).max().shift(-20*w)/data['Price'] - 1
 data['label3'] = data.mp.rolling(window=20).min().shift(-20*w)/data['Price'] - 1
@@ -222,10 +218,10 @@ for day in range(1, 201):
 all_data = np.array(all_data)
 all_label = np.array(all_label)
 trX, teX, trY, teY = split_tr_te(all_data, all_label)
-view_s(trX, trY)
+# view_s(trX, trY)
 trX = norm_everyday(trX)
 teX = norm_everyday(teX)
-view_s(trX, trY)
+# view_s(trX, trY)
 tr_L1_data = L1_struct(trX, trY)
 te_L1_data = L1_struct(teX, teY)
 
