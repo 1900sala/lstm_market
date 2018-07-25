@@ -41,7 +41,6 @@ def view_s(data, label):
     return
 
 
-
 def norm_data(data):
     mean_price = np.mean(data[:, 0])
     std_price = np.std(data[:, 0])
@@ -57,6 +56,23 @@ def norm_data(data):
     data[:, 13:23] = (data[:, 13:23] - mean_ba) / std_ba
     data[:, 25] = (data[:, 25] - mean_price_std) / std_price_std
     return data, [mean_price, mean_ba, mean_volume, mean_price]
+
+
+def norm_data11(data):
+    min_price = np.min(data[:, 0])
+    max_price = np.max(data[:, 0])
+    min_volume = np.min(data[:, 1])
+    max_volume = np.max(data[:, 1])
+    min_ba = np.min(data[:, 13:23])
+    max_ba = np.max(data[:, 13:23])
+    min_price_std = np.min(data[:, 25])
+    max_price_std = np.max(data[:, 25])
+    data[:, 0] = (data[:, 0] - min_price) / (max_price - min_price)
+    data[:, 1] = (data[:, 1] - min_volume) / (max_volume - min_volume)
+    data[:, 3:13] = (data[:, 3:13] - min_price) / (max_price - min_price)
+    data[:, 13:23] = (data[:, 13:23] - min_ba) / (max_ba -min_ba)
+    data[:, 25] = (data[:, 25] - min_price_std) / (max_price_std -min_price_std)
+    return data, [min_price, min_volume, min_ba, min_price_std]
 
 
 def split_tr_te(data, label, size=0.8):
@@ -109,8 +125,8 @@ class L1_struct(object):
                     temp_index = p_index[np.random.randint(low=0, high=len(p_index))]
 
             copy_data = copy.deepcopy(batch_data[batch][: temp_index+1, :])
-            copy_label = copy.deepcopy(batch_label[batch][: temp_index + 1])
-            copy_data, temp = norm_data(copy_data)
+            copy_label = copy.deepcopy(batch_label[batch][: temp_index+1])
+            copy_data, temp = norm_data11(copy_data)
             # view_s(copy_data, copy_label)
             sequence_length.append(len(copy_data))
             batch_fix_data.append(copy_data)
@@ -198,7 +214,9 @@ sequence_length = tf.placeholder(tf.int32, [None])
 
 
 def model(X):
-    lstm = rnn.LSTMCell(hiede_size, cell_clip=100000, activation=tf.nn.relu, forget_bias=1.0, state_is_tuple=True)
+    lstm = rnn.LSTMCell(hiede_size, cell_clip=100000,
+                        # activation=tf.nn.relu,
+                        forget_bias=1.0, state_is_tuple=True)
     # mlstm_cell = rnn.MultiRNNCell([lstm  for _ in range(3)], state_is_tuple=True)
     # print(X.shape)
     init_state = lstm.zero_state(20, dtype=tf.float32)
