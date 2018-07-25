@@ -198,7 +198,7 @@ sequence_length = tf.placeholder(tf.int32, [None])
 
 
 def model(X):
-    lstm = rnn.LSTMCell(hiede_size, activation=tf.nn.relu, forget_bias=1.0, state_is_tuple=True)
+    lstm = rnn.LSTMCell(hiede_size, cell_clip=100000, activation=tf.nn.relu, forget_bias=1.0, state_is_tuple=True)
     # mlstm_cell = rnn.MultiRNNCell([lstm  for _ in range(3)], state_is_tuple=True)
     # print(X.shape)
     init_state = lstm.zero_state(20, dtype=tf.float32)
