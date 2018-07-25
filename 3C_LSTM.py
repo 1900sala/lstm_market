@@ -43,15 +43,14 @@ def view_s(data, label):
 
 
 def norm_data(data):
-    norm_len = len(data[:,0])
-    mean_price = np.mean(data[:norm_len, 0])
-    std_price = np.std(data[:norm_len, 0])
-    mean_volume = np.mean(data[:norm_len, 1])
-    std_volume = np.std(data[:norm_len, 1])
-    mean_ba = np.mean(data[:norm_len, 13:])
-    std_ba = np.std(data[:norm_len, 13:])
-    mean_price_std = np.mean(data[:norm_len, 25])
-    std_price_std =np.std(data[:norm_len, 25])
+    mean_price = np.mean(data[:, 0])
+    std_price = np.std(data[:, 0])
+    mean_volume = np.mean(data[:, 1])
+    std_volume = np.std(data[:, 1])
+    mean_ba = np.mean(data[:, 13:])
+    std_ba = np.std(data[:, 13:])
+    mean_price_std = np.mean(data[:, 25])
+    std_price_std =np.std(data[:, 25])
     data[:, 0] = (data[:, 0] - mean_price) / std_price
     data[:, 1] = (data[:, 1] - mean_volume) / std_volume
     data[:, 3:13] = (data[:, 3:13] - mean_price) / std_price
@@ -112,7 +111,7 @@ class L1_struct(object):
             copy_data = copy.deepcopy(batch_data[batch][: temp_index+1, :])
             copy_label = copy.deepcopy(batch_label[batch][: temp_index + 1])
             copy_data, temp = norm_data(copy_data)
-            view_s(copy_data, copy_label)
+            # view_s(copy_data, copy_label)
             sequence_length.append(len(copy_data))
             batch_fix_data.append(copy_data)
             if copy_label[-1] == 0:
