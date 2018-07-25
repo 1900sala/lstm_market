@@ -67,11 +67,11 @@ def norm_data11(data):
     max_ba = np.max(data[:, 13:23])
     min_price_std = np.min(data[:, 25])
     max_price_std = np.max(data[:, 25])
-    data[:, 0] = (data[:, 0] - min_price) / (max_price - min_price)
-    data[:, 1] = (data[:, 1] - min_volume) / (max_volume - min_volume)
-    data[:, 3:13] = (data[:, 3:13] - min_price) / (max_price - min_price)
-    data[:, 13:23] = (data[:, 13:23] - min_ba) / (max_ba -min_ba)
-    data[:, 25] = (data[:, 25] - min_price_std) / (max_price_std -min_price_std)
+    data[:, 0] = (data[:, 0] - min_price) / (max_price - min_price) - 0.5
+    data[:, 1] = (data[:, 1] - min_volume) / (max_volume - min_volume) - 0.5
+    data[:, 3:13] = (data[:, 3:13] - min_price) / (max_price - min_price) - 0.5
+    data[:, 13:23] = (data[:, 13:23] - min_ba) / (max_ba -min_ba) - 0.5
+    data[:, 25] = (data[:, 25] - min_price_std) / (max_price_std -min_price_std) - 0.5
     return data, [min_price, min_volume, min_ba, min_price_std]
 
 
