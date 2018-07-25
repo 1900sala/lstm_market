@@ -47,10 +47,10 @@ def norm_data(data):
     std_price = np.std(data[:, 0])
     mean_volume = np.mean(data[:, 1])
     std_volume = np.std(data[:, 1])
-    mean_ba = np.mean(data[:, 13:])
-    std_ba = np.std(data[:, 13:])
+    mean_ba = np.mean(data[:, 13:23])
+    std_ba = np.std(data[:, 13:23])
     mean_price_std = np.mean(data[:, 25])
-    std_price_std =np.std(data[:, 25])
+    std_price_std = np.std(data[:, 25])
     data[:, 0] = (data[:, 0] - mean_price) / std_price
     data[:, 1] = (data[:, 1] - mean_volume) / std_volume
     data[:, 3:13] = (data[:, 3:13] - mean_price) / std_price
