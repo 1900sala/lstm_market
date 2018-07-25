@@ -228,9 +228,8 @@ cnn_output, states = model(X)
 h1 = tf.nn.relu(tf.matmul(cnn_output, w_1) + b_1)
 h2 = tf.nn.relu(tf.matmul(h1, w_2) + b_2)
 h3 = tf.nn.relu(tf.matmul(h2, w_3) + b_3)
-py_x = tf.nn.softmax(tf.matmul(h3, w_out) + b_out)
-
-
+h4 = tf.matmul(h3, w_out) + b_out
+py_x = tf.nn.softmax(h4)
 cost = -tf.reduce_sum(Y*tf.log(tf.clip_by_value(py_x, 1e-5, 1)))
 train_op = tf.train.RMSPropOptimizer(0.001, 0.9).minimize(cost)
 correct_prediction = tf.equal(tf.argmax(py_x, 1), tf.argmax(Y, 1))
@@ -248,6 +247,7 @@ with tf.Session(config=session_conf) as sess:
         for t in range(50):
             batch_data, batch_label, seq = tr_L1_data.batch(20)
             sess.run(train_op, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq})
+            print('h4', sess.run(h4, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
             if t % 10 == 0:
                 print('train_acc', sess.run(accuracy, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
 
