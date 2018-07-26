@@ -265,7 +265,7 @@ with tf.Session(config=session_conf) as sess:
         for t in range(50):
             batch_data, batch_label, seq = tr_L1_data.batch(20)
             sess.run(train_op, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq})
-            print('h4', sess.run(h4, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
+            print('h4', sess.run([h4,h1], feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
             if t % 10 == 0:
                 print('train_acc', sess.run(accuracy, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
 
@@ -273,6 +273,5 @@ with tf.Session(config=session_conf) as sess:
         # print('last_states', sess.run(states, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
         print(i, sess.run(accuracy, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
         p = sess.run(py_x, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq})
-        # print(batch_data)
         p = np.concatenate((p, batch_label), 1)
         print(p)
