@@ -59,7 +59,7 @@ data['std_Price'] = data['Price'].rolling(window=40).mean()
 data['label1'] = data.mp.rolling(window=20).mean().shift(-20*w)/data['Price'] - 1
 data['label2'] = data.mp.rolling(window=20).max().shift(-20*w)/data['Price'] - 1
 data['label3'] = data.mp.rolling(window=20).min().shift(-20*w)/data['Price'] - 1
-data['label'] = data.apply(lambda x: 0 if abs(x['label1']) < 0.002 and x['label2'] < 0.003 and x['label3'] > -0.003
+data['label'] = data.apply(lambda x: 0 if abs(x['label1']) < 0.003 and x['label2'] < 0.004 and x['label3'] > -0.004
                                       else 1, axis=1)
 # data['label'] = data.apply(lambda x: 0 if abs(x['label1']) < 0.002 else 1, axis=1)
 
@@ -102,7 +102,7 @@ sequence_length = tf.placeholder(tf.int32, [None])
 
 
 def model(X):
-    lstm = rnn.LSTMCell(hiede_size, cell_clip=100000,
+    lstm = rnn.LSTMCell(hiede_size,
                         # activation=tf.nn.relu,
                         forget_bias=1.0, state_is_tuple=True)
     # mlstm_cell = rnn.MultiRNNCell([lstm  for _ in range(3)], state_is_tuple=True)
@@ -149,8 +149,8 @@ with tf.Session(config=session_conf) as sess:
     # you need to initialize all variables
     tf.global_variables_initializer().run()
 
-    for i in range(50):
-        for t in range(50):
+    for i in range(200):
+        for t in range(30):
             batch_data, batch_label, seq = tr_L1_data.batch(20)
             sess.run(train_op, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq})
             # temp = sess.run([h4,h1,cnn_output,py_x], feed_dict={X: batch_data, Y: batch_label, sequence_length: seq})
