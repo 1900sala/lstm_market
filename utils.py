@@ -38,37 +38,19 @@ def view_s(data, label):
 
 
 def norm_data(data):
-    mean_price = np.mean(data[:, 0])
-    std_price = np.std(data[:, 0])
-    mean_volume = np.mean(data[:, 1])
-    std_volume = np.std(data[:, 1])
-    mean_ba = np.mean(data[:, 13:23])
-    std_ba = np.std(data[:, 13:23])
-    mean_price_std = np.mean(data[:, 25])
-    std_price_std = np.std(data[:, 25])
-    data[:, 0] = (data[:, 0] - mean_price) / std_price
-    data[:, 1] = (data[:, 1] - mean_volume) / std_volume
-    data[:, 3:13] = (data[:, 3:13] - mean_price) / std_price
-    data[:, 13:23] = (data[:, 13:23] - mean_ba) / std_ba
-    data[:, 25] = (data[:, 25] - mean_price_std) / std_price_std
-    return data, [mean_price, mean_ba, mean_volume, mean_price]
+    for i in range(len(data[0, ])):
+        mean = np.mean(data[:, i])
+        std = np.std(data[:, i])
+        data[:, i] = (data[:, i] - mean)/std
+    return data
 
 
 def norm_data11(data):
-    min_price = np.min(data[:, 0])
-    max_price = np.max(data[:, 0])
-    min_volume = np.min(data[:, 1])
-    max_volume = np.max(data[:, 1])
-    min_ba = np.min(data[:, 13:23])
-    max_ba = np.max(data[:, 13:23])
-    min_price_std = np.min(data[:, 25])
-    max_price_std = np.max(data[:, 25])
-    data[:, 0] = (data[:, 0] - min_price) / (max_price - min_price) - 0.5
-    data[:, 1] = (data[:, 1] - min_volume) / (max_volume - min_volume) - 0.5
-    data[:, 3:13] = (data[:, 3:13] - min_price) / (max_price - min_price) - 0.5
-    data[:, 13:23] = (data[:, 13:23] - min_ba) / (max_ba -min_ba) - 0.5
-    data[:, 25] = (data[:, 25] - min_price_std) / (max_price_std -min_price_std) - 0.5
-    return data, [min_price, min_volume, min_ba, min_price_std]
+    for i in range(len(data[0,])):
+        min = np.min(data[:, i])
+        max = np.max(data[:, i])
+        data[:, i] = (data[:, i] - min) / (max - min) - 0.5
+    return data
 
 
 def split_tr_te(data, label, size=0.8):
@@ -121,7 +103,7 @@ class L1_struct(object):
 
             copy_data = copy.deepcopy(batch_data[batch][: temp_index+1, :])
             copy_label = copy.deepcopy(batch_label[batch][: temp_index+1])
-            copy_data, temp = norm_data11(copy_data)
+            copy_data = norm_data11(copy_data)
             # view_s(copy_data, copy_label)
             sequence_length.append(len(copy_data))
             batch_fix_data.append(copy_data)

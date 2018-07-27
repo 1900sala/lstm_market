@@ -6,7 +6,7 @@ import scipy.io as sio
 from utils import *
 import pandas as pd
 
-input_vec_size = 26
+input_vec_size = 10
 hiede_size = 256  # 输入向量的维度
 
 
@@ -24,24 +24,24 @@ data = pd.DataFrame(data_dic)
 w = 2
 bsflg2num = {'B': 0, 'S': 1, ' ': 2}
 data['Price'] = data['Price'].apply(lambda x: np.float(x[0]))
+data['lPrice'] = data['Price'].shift()
+data['tick_r'] = (data['Price'] - data['lPrice'])/data['Price']
 data['AskPrice5'] = data['AskPrice5'].apply(lambda x: np.array(x))
-qqq = data['Price'].std()
-
-print(qqq)
-print(data['Price'])
-
 data['BidPrice5'] = data['BidPrice5'].apply(lambda x: np.array(x))
 data['AskVolume5'] = data['AskVolume5'].apply(lambda x: np.array(x))
 data['BidVolume5'] = data['BidVolume5'].apply(lambda x: np.array(x))
-data['sum_apv5'] = data['AskPrice5']*data['AskVolume5']
-data['sum_apv5'] = data['sum_apv5'].apply(lambda x: np.sum(x))
-data['sum_bpv5'] = data['BidPrice5']*data['BidVolume5']
-data['sum_bpv5'] = data['sum_bpv5'].apply(lambda x: np.sum(x))
-data['sum_av5'] = data['AskVolume5'].apply(lambda x: np.sum(x))
-data['sum_bv5'] = data['BidVolume5'].apply(lambda x: np.sum(x))
-
-data['sum_bv5'] = data['BidVolume5'].apply(lambda x: np.log(np.sum(x)) if np.sum(x) != 0 else 0)
-data['vol_r'] = data['sum_av5']/data['sum_bv5']
+data['sum_apv'] = data['AskPrice5']*data['AskVolume5']
+data['sum_apv'] = data['sum_apv'].apply(lambda x: np.sum(x))
+data['sum_bpv'] = data['BidPrice5']*data['BidVolume5']
+data['sum_bpv'] = data['sum_bpv'].apply(lambda x: np.sum(x))
+data['sum_av'] = data['AskVolume5'].apply(lambda x: np.sum(x))
+data['sum_bv'] = data['BidVolume5'].apply(lambda x: np.sum(x))
+data['v_ratio'] = data['sum_av']/data['sum_bv']
+data['pv_ratio'] = data['sum_apv']/data['sum_bpv']
+#
+# print(data[['tick_r', 'pv_ratio', 'v_ratio']])
+# print(data[['AskPrice5', 'AskVolume5']])
+# print(data[['BidPrice5', 'BidVolume5']])
 data['BSFlag'] = data['BSFlag'].apply(lambda x: bsflg2num[x])
 data['BSFlag1'] = data['BSFlag'].apply(lambda x: 1 if x == 0 else 0)
 data['BSFlag2'] = data['BSFlag'].apply(lambda x: 1 if x == 1 else 0)
@@ -71,19 +71,19 @@ for i in range(0, 5):
 del data['AskPrice5'], data['BidPrice5'], data['AskVolume5'], data['BidVolume5']
 
 f2use = ['Price', 'Volume', 'BSFlag1',
-         'AskPrice_t0', 'AskPrice_t1', 'AskPrice_t2', 'AskPrice_t3', 'AskPrice_t4',
-         'BidPrice_t0', 'BidPrice_t1', 'BidPrice_t2', 'BidPrice_t3', 'BidPrice_t4',
-         'AskVolume_t0', 'AskVolume_t1', 'AskVolume_t2', 'AskVolume_t3', 'AskVolume_t4',
-         'BidVolume_t0', 'BidVolume_t1', 'BidVolume_t2', 'BidVolume_t3', 'BidVolume_t4',
-         'BSFlag2', 'BSFlag3', 'std_Price'
+         # 'AskPrice_t0', 'AskPrice_t1', 'AskPrice_t2', 'AskPrice_t3', 'AskPrice_t4',
+         # 'BidPrice_t0', 'BidPrice_t1', 'BidPrice_t2', 'BidPrice_t3', 'BidPrice_t4',
+         # 'AskVolume_t0', 'AskVolume_t1', 'AskVolume_t2', 'AskVolume_t3', 'AskVolume_t4',
+         # 'BidVolume_t0', 'BidVolume_t1', 'BidVolume_t2', 'BidVolume_t3', 'BidVolume_t4',
+         'BSFlag2', 'BSFlag3', 'std_Price', 'mp', 'tick_r', 'pv_ratio', 'v_ratio'
          ]
 all_data = []
 all_label = []
 for day in range(1, 201):
     print('day:', day)
     day_data = np.array(data[f2use][day_b[day]:day_e[day]])
-    day_data[:, 0] = day_data[:, 0]/close_price[day-1]
-    day_data[:, 3:13] = day_data[:, 3:13]/close_price[day-1]
+    # day_data[:, 0] = day_data[:, 0]/close_price[day-1]
+    # day_data[:, 3:13] = day_data[:, 3:13]/close_price[day-1]
     # print(day_data.shape)
     day_label = np.array(data['label'][day_b[day]:day_e[day]])
     all_data.append(day_data)
@@ -120,7 +120,8 @@ def model(X):
 
 def init_weights(shape):
     return tf.Variable(tf.random_normal(shape, stddev=0.01))
-# get lstm_size and output 10 labels
+
+
 w_1 = init_weights([hiede_size, 64])
 b_1 = init_weights([64])
 w_2 = init_weights([64, 64])
@@ -152,12 +153,12 @@ with tf.Session(config=session_conf) as sess:
         for t in range(50):
             batch_data, batch_label, seq = tr_L1_data.batch(20)
             sess.run(train_op, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq})
-            temp = sess.run([h4,h1,cnn_output,py_x], feed_dict={X: batch_data, Y: batch_label, sequence_length: seq})
-            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            print(temp[3][0])
-            print(temp[0][0])
-            print(temp[1][0])
-            print(temp[2][0])
+            # temp = sess.run([h4,h1,cnn_output,py_x], feed_dict={X: batch_data, Y: batch_label, sequence_length: seq})
+            # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            # print(temp[3][0])
+            # print(temp[0][0])
+            # print(temp[1][0])
+            # print(temp[2][0])
             if t % 10 == 0:
                 print('train_acc', sess.run(accuracy, feed_dict={X: batch_data, Y: batch_label, sequence_length: seq}))
 
