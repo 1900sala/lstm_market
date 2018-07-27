@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-import scipy.io as sio
 import matplotlib.pyplot as plt
 import pandas as pd
 import random
@@ -38,7 +37,7 @@ def view_s(data, label):
 
 
 def norm_data(data):
-    for i in range(len(data[0, ])):
+    for i in range(len(data[0, ])-3):
         mean = np.mean(data[:, i])
         std = np.std(data[:, i])
         data[:, i] = (data[:, i] - mean)/std
@@ -46,7 +45,7 @@ def norm_data(data):
 
 
 def norm_data11(data):
-    for i in range(len(data[0,])):
+    for i in range(len(data[0,])-3):
         min = np.min(data[:, i])
         max = np.max(data[:, i])
         data[:, i] = (data[:, i] - min) / (max - min) - 0.5

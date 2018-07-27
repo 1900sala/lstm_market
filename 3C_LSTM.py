@@ -70,12 +70,12 @@ for i in range(0, 5):
     data['BidVolume' + '_t' + str(i)] = data['BidVolume5'].apply(lambda x: 0 if x[i] == 0 else np.log(np.float(x[i])))
 del data['AskPrice5'], data['BidPrice5'], data['AskVolume5'], data['BidVolume5']
 
-f2use = ['Price', 'Volume', 'BSFlag1',
+f2use = ['Price', 'Volume', 'std_Price', 'mp', 'tick_r', 'pv_ratio', 'v_ratio',
          # 'AskPrice_t0', 'AskPrice_t1', 'AskPrice_t2', 'AskPrice_t3', 'AskPrice_t4',
          # 'BidPrice_t0', 'BidPrice_t1', 'BidPrice_t2', 'BidPrice_t3', 'BidPrice_t4',
          # 'AskVolume_t0', 'AskVolume_t1', 'AskVolume_t2', 'AskVolume_t3', 'AskVolume_t4',
          # 'BidVolume_t0', 'BidVolume_t1', 'BidVolume_t2', 'BidVolume_t3', 'BidVolume_t4',
-         'BSFlag2', 'BSFlag3', 'std_Price', 'mp', 'tick_r', 'pv_ratio', 'v_ratio'
+         'BSFlag1','BSFlag2', 'BSFlag3'
          ]
 all_data = []
 all_label = []
